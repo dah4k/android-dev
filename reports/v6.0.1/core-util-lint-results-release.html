@@ -177,17 +177,19 @@ document.getElementById(id).style.display = 'none';
 <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
-      <span class="mdl-layout-title">Lint Report: 1 warning</span>
+      <span class="mdl-layout-title">Lint Report: 3 warnings</span>
       <div class="mdl-layout-spacer"></div>
       <nav class="mdl-navigation mdl-layout--large-screen-only">
-Check performed at Wed Oct 26 03:23:54 UTC 2022      </nav>
+Check performed at Wed Oct 26 21:20:53 UTC 2022      </nav>
     </div>
   </header>
   <div class="mdl-layout__drawer">
     <span class="mdl-layout-title">Issue Types</span>
     <nav class="mdl-navigation">
       <a class="mdl-navigation__link" href="#overview"><i class="material-icons">dashboard</i>Overview</a>
-      <a class="mdl-navigation__link" href="#CustomX509TrustManager"><i class="material-icons warning-icon">warning</i>Implements custom TLS trust manager (1)</a>
+      <a class="mdl-navigation__link" href="#DiscouragedPrivateApi"><i class="material-icons warning-icon">warning</i>Using Discouraged Private API (1)</a>
+      <a class="mdl-navigation__link" href="#AppBundleLocaleChanges"><i class="material-icons warning-icon">warning</i>App Bundle handling of runtime locale changes (1)</a>
+      <a class="mdl-navigation__link" href="#UnusedResources"><i class="material-icons warning-icon">warning</i>Unused resources (1)</a>
     </nav>
   </div>
   <main class="mdl-layout__content">
@@ -200,11 +202,19 @@ Check performed at Wed Oct 26 03:23:54 UTC 2022      </nav>
   </div>
               <div class="mdl-card__supporting-text">
 <table class="overview">
-<tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Security">Security</a>
+<tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Correctness">Correctness</a>
 </td></tr>
 <tr>
 <td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
-<a href="#CustomX509TrustManager">CustomX509TrustManager</a>: Implements custom TLS trust manager</td></tr>
+<a href="#DiscouragedPrivateApi">DiscouragedPrivateApi</a>: Using Discouraged Private API</td></tr>
+<tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
+<a href="#AppBundleLocaleChanges">AppBundleLocaleChanges</a>: App Bundle handling of runtime locale changes</td></tr>
+<tr><td class="countColumn"></td><td class="categoryColumn"><a href="#Performance">Performance</a>
+</td></tr>
+<tr>
+<td class="countColumn">1</td><td class="issueColumn"><i class="material-icons warning-icon">warning</i>
+<a href="#UnusedResources">UnusedResources</a>: Unused resources</td></tr>
 <tr><td></td><td class="categoryColumn"><a href="#MissingIssues">Disabled Checks (35)</a>
 </td></tr></table>
 <br/>              </div>
@@ -213,37 +223,85 @@ Check performed at Wed Oct 26 03:23:54 UTC 2022      </nav>
 Dismiss</button>            </div>
             </div>
           </section>
-<a name="Security"></a>
-<a name="CustomX509TrustManager"></a>
-<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="CustomX509TrustManagerCard" style="display: block;">
+<a name="Correctness"></a>
+<a name="DiscouragedPrivateApi"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="DiscouragedPrivateApiCard" style="display: block;">
             <div class="mdl-card mdl-cell mdl-cell--12-col">
   <div class="mdl-card__title">
-    <h2 class="mdl-card__title-text">Implements custom TLS trust manager</h2>
+    <h2 class="mdl-card__title-text">Using Discouraged Private API</h2>
   </div>
               <div class="mdl-card__supporting-text">
 <div class="issue">
 <div class="warningslist">
-<span class="location"><a href="../../src/main/java/org/signal/devicetransfer/SelfSignedIdentity.java">../../src/main/java/org/signal/devicetransfer/SelfSignedIdentity.java</a>:98</span>: <span class="message">Implementing a custom <code>X509TrustManager</code> is error-prone and likely to be insecure. It is likely to disable certificate validation altogether, and is non-trivial to implement correctly without calling Android's default implementation.</span><br /><pre class="errorlines">
-<span class="lineno">  95 </span>    }
-<span class="lineno">  96 </span>  }
-<span class="lineno">  97 </span>
-<span class="caretline"><span class="lineno">  98 </span>  <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="warning">ApprovingTrustManager</span> <span class="keyword">implements</span> X509TrustManager {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-<span class="lineno">  99 </span>
-<span class="lineno"> 100 </span>    <span class="keyword">private</span> <span class="annotation">@Nullable</span> X509Certificate x509Certificate;
+<span class="location"><a href="../../src/main/java/org/signal/core/util/EditTextUtil.java">../../src/main/java/org/signal/core/util/EditTextUtil.java</a>:59</span>: <span class="message">Reflective access to mEditor, which is not part of the public SDK and therefore likely to change in future Android releases</span><br /><pre class="errorlines">
+<span class="lineno"> 56 </span>      fCursorDrawableRes.setAccessible(<span class="keyword">true</span>);
+<span class="lineno"> 57 </span>
+<span class="lineno"> 58 </span>      <span class="keyword">int</span>   mCursorDrawableRes = fCursorDrawableRes.getInt(editText);
+<span class="caretline"><span class="lineno"> 59 </span>      Field fEditor            = <span class="warning">TextView.<span class="keyword">class</span>.getDeclaredField(<span class="string">"mEditor"</span>)</span>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 60 </span>      fEditor.setAccessible(<span class="keyword">true</span>);
+<span class="lineno"> 61 </span>
+<span class="lineno"> 62 </span>      Object   editor          = fEditor.get(editText);
 </pre>
 
 </div>
-<div class="metadata"><div class="explanation" id="explanationCustomX509TrustManager" style="display: none;">
-This check looks for custom <code>X509TrustManager</code> implementations.<br/>To suppress this error, use the issue id "CustomX509TrustManager" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<div class="metadata"><div class="explanation" id="explanationDiscouragedPrivateApi" style="display: none;">
+Usage of restricted non-SDK interface may throw an exception at runtime. Accessing non-SDK methods or fields through reflection has a high likelihood to break your app between versions, and is being restricted to facilitate future app compatibility.<br/><div class="moreinfo">More info: <a href="https://developer.android.com/preview/restrictions-non-sdk-interfaces">https://developer.android.com/preview/restrictions-non-sdk-interfaces</a>
+</div>To suppress this error, use the issue id "DiscouragedPrivateApi" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
 <br/></div>
 </div>
 </div>
 <div class="chips">
 <span class="mdl-chip">
-    <span class="mdl-chip__text">CustomX509TrustManager</span>
+    <span class="mdl-chip__text">DiscouragedPrivateApi</span>
 </span>
 <span class="mdl-chip">
-    <span class="mdl-chip__text">Security</span>
+    <span class="mdl-chip__text">Correctness</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Warning</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 6/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationDiscouragedPrivateApiLink" onclick="reveal('explanationDiscouragedPrivateApi');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="DiscouragedPrivateApiCardLink" onclick="hideid('DiscouragedPrivateApiCard');">
+Dismiss</button>            </div>
+            </div>
+          </section><a name="AppBundleLocaleChanges"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="AppBundleLocaleChangesCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">App Bundle handling of runtime locale changes</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="../../src/main/java/org/signal/core/util/ResourceUtil.java">../../src/main/java/org/signal/core/util/ResourceUtil.java</a>:28</span>: <span class="message">Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the <code>bundle</code> configuration</span><br /><pre class="errorlines">
+<span class="lineno"> 25 </span>    Configuration configurationLocal = context.getResources().getConfiguration();
+<span class="lineno"> 26 </span>
+<span class="lineno"> 27 </span>    Configuration configurationEn = <span class="keyword">new</span> Configuration(configurationLocal);
+<span class="caretline"><span class="lineno"> 28 </span>    <span class="warning">configurationEn.setLocale(locale)</span>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno"> 29 </span>
+<span class="lineno"> 30 </span>    <span class="keyword">return</span> context.createConfigurationContext(configurationEn)
+<span class="lineno"> 31 </span>                  .getResources();
+</pre>
+
+</div>
+<div class="metadata"><div class="explanation" id="explanationAppBundleLocaleChanges" style="display: none;">
+When changing locales at runtime (e.g. to provide an in-app language switcher), the Android App Bundle must be configured to not split by locale or the Play Core library must be used to download additional locales at runtime.<br/><div class="moreinfo">More info: <a href="https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes">https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes</a>
+</div>To suppress this error, use the issue id "AppBundleLocaleChanges" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">AppBundleLocaleChanges</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Correctness</span>
 </span>
 <span class="mdl-chip">
     <span class="mdl-chip__text">Warning</span>
@@ -254,8 +312,56 @@ This check looks for custom <code>X509TrustManager</code> implementations.<br/>T
 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border">
-<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationCustomX509TrustManagerLink" onclick="reveal('explanationCustomX509TrustManager');">
-Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="CustomX509TrustManagerCardLink" onclick="hideid('CustomX509TrustManagerCard');">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationAppBundleLocaleChangesLink" onclick="reveal('explanationAppBundleLocaleChanges');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="AppBundleLocaleChangesCardLink" onclick="hideid('AppBundleLocaleChangesCard');">
+Dismiss</button>            </div>
+            </div>
+          </section>
+<a name="Performance"></a>
+<a name="UnusedResources"></a>
+<section class="section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp" id="UnusedResourcesCard" style="display: block;">
+            <div class="mdl-card mdl-cell mdl-cell--12-col">
+  <div class="mdl-card__title">
+    <h2 class="mdl-card__title-text">Unused resources</h2>
+  </div>
+              <div class="mdl-card__supporting-text">
+<div class="issue">
+<div class="warningslist">
+<span class="location"><a href="../../src/main/res/drawable/ic_trash_white_24.xml">../../src/main/res/drawable/ic_trash_white_24.xml</a>:1</span>: <span class="message">The resource <code>R.drawable.ic_trash_white_24</code> appears to be unused</span><br /><pre class="errorlines">
+<span class="caretline"><span class="lineno">  1 </span><span class="warning"><span class="tag">&lt;vector</span><span class="attribute"> </span><span class="prefix">xmlns:</span><span class="attribute">android</span>=<span class="value">"http://schemas.android.com/apk/res/android"</span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<span class="lineno">  2 </span>    <span class="prefix">android:</span><span class="attribute">width</span>=<span class="value">"24dp"</span>
+<span class="lineno">  3 </span>    <span class="prefix">android:</span><span class="attribute">height</span>=<span class="value">"24dp"</span>
+<span class="lineno">  4 </span>    <span class="prefix">android:</span><span class="attribute">viewportWidth</span>=<span class="value">"24"</span></pre>
+
+</div>
+<div class="metadata"><div class="explanation" id="explanationUnusedResources" style="display: none;">
+Unused resources make applications larger and slow down builds.<br/>
+<br/>
+The unused resource check can ignore tests. If you want to include resources that are only referenced from tests, consider packaging them in a test source set instead.<br/>
+<br/>
+You can include test sources in the unused resource check by setting the system property lint.unused-resources.include-tests=true, and to exclude them (usually for performance reasons), use lint.unused-resources.exclude-tests=true.<br/>Note: This issue has an associated quickfix operation in Android Studio and IntelliJ IDEA.<br>
+To suppress this error, use the issue id "UnusedResources" as explained in the <a href="#SuppressInfo">Suppressing Warnings and Errors</a> section.<br/>
+<br/></div>
+</div>
+</div>
+<div class="chips">
+<span class="mdl-chip">
+    <span class="mdl-chip__text">UnusedResources</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Performance</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Warning</span>
+</span>
+<span class="mdl-chip">
+    <span class="mdl-chip__text">Priority 3/10</span>
+</span>
+</div>
+              </div>
+              <div class="mdl-card__actions mdl-card--border">
+<button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="explanationUnusedResourcesLink" onclick="reveal('explanationUnusedResources');">
+Explain</button><button class="mdl-button mdl-js-button mdl-js-ripple-effect" id="UnusedResourcesCardLink" onclick="hideid('UnusedResourcesCard');">
 Dismiss</button>            </div>
             </div>
           </section>
