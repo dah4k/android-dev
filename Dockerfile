@@ -8,3 +8,5 @@ RUN curl -L -O https://github.com/signalapp/Signal-Android/archive/refs/tags/v${
 
 WORKDIR /home/circleci/project
 RUN ./gradlew clean assemblePlayProdRelease qa
+
+RUN tar -czf lint-v${SIGNAL_VERSION}.tgz $(find . -name "lint*.html")
