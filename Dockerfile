@@ -1,15 +1,9 @@
-FROM gradle:7.5.1-jdk8-focal
+FROM cimg/android:2022.09
 
-COPY docker/apt.conf /etc/apt
+WORKDIR /home/circleci
+RUN git clone https://github.com/signalapp/Signal-Android project \
+    && cd project \
+    && git checkout v6.0.1
 
-WORKDIR /scratch
-COPY Requirements.txt Requirements.txt
-
-ARG DEBIAN_FRONTEND=noninteractive
-ARG TZ=Etc/UTC
-RUN apt-get update \
-        --quiet=2 --assume-yes --no-install-recommends \
-    && apt-get install \
-        --quiet=2 --assume-yes --no-install-recommends $(cat Requirements.txt) \
-    && apt-get clean \
-    && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
+WORKDIR /home/circleci/project
+RUN ./gradlew clean assemblePlayProdRelease qa
