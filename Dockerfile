@@ -10,3 +10,12 @@ WORKDIR /home/circleci/project
 RUN ./gradlew clean assemblePlayProdRelease qa
 
 RUN tar -czf lint-v${SIGNAL_VERSION}.tgz $(find . -name "lint*.html")
+
+WORKDIR /home/circleci
+COPY codeql-bundle-linux64.tar.gz .
+RUN tar -xzf codeql-bundle-linux64.tar.gz \
+    && rm codeql-bundle-linux64.tar.gz
+
+RUN codeql/codeql database create codeql-db --language=java --command="./gradlew clean assemblePlayProdRelease" --no-run-unnecessary-builds --source-root="/home/circleci/project"
+
+RUN codeql/codeql database analyze --format=csv --output="codeql-v${SIGNAL_VERSION}.csv" codeql-db codeql/java-queries
