@@ -13,10 +13,10 @@ $(SIGNAL_VERSIONS):
 		--file Dockerfile
 
 $(COMMANDLINETOOLS_ZIP) $(M2REPOSITORY_ZIP):
-	curl -L -O https://dl.google.android/repository/$@
+	curl -L -O -C - https://dl.google.android/repository/$@
 
 $(GRADLE_ZIP):
-	curl -L -O https://services.gradle.org/distributions/$@
+	curl -L -O -C - https://services.gradle.org/distributions/$@
 
 clean:
 	docker image prune --force
