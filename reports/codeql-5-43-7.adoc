@@ -1,0 +1,607 @@
+= CodeQL Signal-Android v5.43.7
+:!webfonts:
+
+== Test Objective
+
+Implementation Under Test (IUT) compiles cleanly without CodeQL reporting warning or error.
+
+== Test ID
+
+CODEQL-5-43-7
+
+== Affected Modules/Files
+
+== Requirement References to Test Document
+
+== Summary
+
+== Scope
+
+== Test Steps
+
+== Observations
+
+=== Four (4) Warning - Implicit narrowing conversion in compound assignment
+
+Implicit cast of source type long to narrower destination type int.
+
+[source, java]
+----
+// File: /app/src/main/java/org/signal/glide/common/io/StreamReader.java:51
+ 48     @Override
+ 49     public long skip(long n) throws IOException {
+ 50         long ret = super.skip(n);
+ 51         position += ret;
+ 52         return ret;
+ 53     }
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/backup/FullBackupExporter.java:155
+150 try {
+151   outputStream.writeDatabaseVersion(input.getVersion());
+152   count++;
+153
+154   List<String> tables = exportSchema(input, outputStream);
+155   count += tables.size() * TABLE_RECORD_COUNT_MULTIPLIER;
+156
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/jobs/MmsSendJob.java:280
+279   body.addPart(part);
+280   size += getPartSize(part);
+281 }
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/jobs/MmsSendJob.java:311
+310     body.addPart(part);
+311     size += getPartSize(part);
+312   } catch (IOException e) {
+----
+
+
+=== Two (2) Errors - Uncontrolled data used in path expression
+
+This path depends on a user-provided value.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/providers/BlobProvider.java:158
+156 String id        = uri.getPathSegments().get(ID_PATH_SEGMENT);
+157 String directory = getDirectory(storageType);
+158 File   file      = new File(getOrCreateDirectory(context, directory), buildFileName(id));
+159
+160 return getFileRepresentation.apply(file);
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/util/storage/FileStorage.java:54
+ 53 File directory = context.getDir(directoryName, Context.MODE_PRIVATE);
+ 54 File file      = new File(directory, filename);
+ 55
+ 56 return getInputStream(context, file);
+----
+
+
+=== Six (6) Warnings - Using a static initialization vector for encryption
+
+See also https://docs.oracle.com/javase/8/docs/api/javax/crypto/spec/IvParameterSpec.html
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/ModernEncryptingPartOutputStream.java:46
+ 41 FileOutputStream fileOutputStream = new FileOutputStream(file);
+ 42 byte[]           iv               = new byte[16];
+ 43 byte[]           key              = mac.doFinal(random);
+ 44
+ 45 Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+ 46 cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/database/loaders/DeviceListLoader.java:107
+106 Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+107 cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(cipherKey, "AES"), newIvParameterSpec(new byte[16]));
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/glide/cache/EncryptedCoder.java:47
+ 42 FileOutputStream fileOutputStream = new FileOutputStream(file);
+ 43 byte[]           iv               = new byte[16];
+ 44 byte[]           key              = mac.doFinal(random);
+ 45
+ 46 Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+ 47 cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/glide/cache/EncryptedCoder.java:82
+ 78 byte[] iv  = new byte[16];
+ 79 byte[] key = mac.doFinal(theirRandom);
+ 80
+ 81 Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+ 82 cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+----
+
+[source, java]
+----
+// File: /core-util/src/main/java/org/signal/core/util/logging/LogFile.java:125
+ 82 static class Reader {
+ 83
+ 84     private final byte[]    ivBuffer = new byte[16];
+...
+125 cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(secret, "AES"), new IvParameterSpec(ivBuffer));
+----
+
+[source, java]
+----
+// File: /libsignal/service/src/main/java/org/whispersystems/signalservice/api/crypto/UnidentifiedAccess.java:46
+ 42 byte[]         nonce  = new byte[12];
+ 43 byte[]         input  = new byte[16];
+ 44
+ 45 Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+ 46 cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(profileKey.serialize(), "AES"), new GCMParameterSpec(128, nonce));
+----
+
+
+=== Seventeen (17) Warnings - Use of a broken or risky cryptographic algorithm
+
+SHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/conversation/ConversationAdapter.java:604
+602   private static MessageDigest getMessageDigestOrThrow() {
+603     try {
+604       return MessageDigest.getInstance("SHA1");
+605     } catch (NoSuchAlgorithmException e) {
+606       throw new AssertionError(e);
+607     }
+608   }
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/AsymmetricMasterCipher.java:118
+113   private SecretKeySpec deriveMacKey(byte[] secretBytes) {
+114     byte[] digestedBytes = getDigestedBytes(secretBytes, 1);
+115     byte[] macKeyBytes   = new byte[20];
+116
+117     System.arraycopy(digestedBytes, 0, macKeyBytes, 0, macKeyBytes.length);
+118     return new SecretKeySpec(macKeyBytes, "HmacSHA1");
+119   }
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/ClassicDecryptingPartInputStream.java:62
+ 62 Cipher          cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 63 IvParameterSpec iv     = new IvParameterSpec(ivBytes);
+ 64 cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(attachmentSecret.getClassicCipherKey(), "AES"), iv);
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/ClassicDecryptingPartInputStream.java:73
+ 72 private static void verifyMac(AttachmentSecret attachmentSecret, File file) throws IOException {
+ 73     Mac             mac        = initializeMac(new SecretKeySpec(attachmentSecret.getClassicMacKey(), "HmacSHA1"));
+ 74     FileInputStream macStream  = new FileInputStream(file);
+ 75     InputStream     dataStream = new LimitedInputStream(new FileInputStream(file), file.length() - MAC_LENGTH);
+ 76     byte[]          theirMac   = new byte[MAC_LENGTH];
+----
+
+AES/CBC/PKCS5Padding and HmacSHA1 are weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/MasterCipher.java:68,69,70
+ 65   public MasterCipher(MasterSecret masterSecret) {
+ 66     try {
+ 67       this.masterSecret = masterSecret;▹▹
+ 68       this.encryptingCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 69       this.decryptingCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 70       this.hmac             = Mac.getInstance("HmacSHA1");
+ 71     } catch (NoSuchPaddingException | NoSuchAlgorithmException nspe) {
+ 72       throw new AssertionError(nspe);
+ 73     }
+ 74   }
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/MasterSecretUtil.java:119
+105   public static MasterSecret getMasterSecret(Context context, String passphrase)
+...
+118       return new MasterSecret(new SecretKeySpec(encryptionSecret, "AES"),
+119                               new SecretKeySpec(macSecret, "HmacSHA1"));
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/MasterSecretUtil.java:187
+169   public static MasterSecret generateMasterSecret(Context context, String passphrase) {
+...
+186       return new MasterSecret(new SecretKeySpec(encryptionSecret, "AES"),
+187                               new SecretKeySpec(macSecret, "HmacSHA1"));
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/MasterSecretUtil.java:262
+260   private static byte[] generateMacSecret() {
+261     try {
+262       KeyGenerator generator = KeyGenerator.getInstance("HmacSHA1");
+263       return generator.generateKey().getEncoded();
+----
+
+HmacSHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/crypto/MasterSecretUtil.java:341
+336   private static Mac getMacForPassphrase(String passphrase, byte[] salt, int iterations)
+337       throws GeneralSecurityException
+338   {
+339     SecretKey     key     = getKeyFromPassphrase(passphrase, salt, iterations);
+340     byte[]        pbkdf2  = key.getEncoded();
+341     SecretKeySpec hmacKey = new SecretKeySpec(pbkdf2, "HmacSHA1");
+342     Mac           hmac    = Mac.getInstance("HmacSHA1");
+343     hmac.init(hmacKey);
+344
+345     return hmac;
+346   }
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /core-util/src/main/java/org/signal/core/util/logging/LogFile.java:46
+ 40     Writer(@NonNull byte[] secret, @NonNull File file) throws IOException {
+ 41       this.secret       = secret;
+ 42       this.file         = file;
+ 43       this.outputStream = new BufferedOutputStream(new FileOutputStream(file, true));
+ 44
+ 45       try {
+ 46         this.cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 47       } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+ 48         throw new AssertionError(e);
+ 49       }
+ 50     }
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /core-util/src/main/java/org/signal/core/util/logging/LogFile.java:97
+ 92     Reader(@NonNull byte[] secret, @NonNull File file) throws IOException {
+ 93       this.secret      = secret;
+ 94       this.inputStream = new BufferedInputStream(new FileInputStream(file));
+ 95
+ 96       try {
+ 97         this.cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 98       } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+ 99         throw new AssertionError(e);
+100       }
+101     }
+----
+
+SHA1 is weak and should not be used.
+
+[source, java]
+----
+// File: /libsignal/service/src/main/java/org/whispersystems/signalservice/api/SignalServiceAccountManager.java:880
+878   private String createDirectoryServerToken(String e164number, boolean urlSafe) {
+879     try {
+880       MessageDigest digest  = MessageDigest.getInstance("SHA1");
+881       byte[]        token   = Util.trim(digest.digest(e164number.getBytes()), 10);
+882       String        encoded = Base64.encodeBytesWithoutPadding(token);
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /libsignal/service/src/main/java/org/whispersystems/signalservice/api/crypto/AttachmentCipherInputStream.java:122
+113   private AttachmentCipherInputStream(InputStream inputStream, byte[] cipherKey, long totalDataSize)
+114       throws IOException
+115   {
+116     super(inputStream);
+117
+118     try {
+119       byte[] iv = new byte[BLOCK_SIZE];
+120       readFully(iv);
+121
+122       this.cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+123       this.cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(cipherKey, "AES"), new IvParameterSpec(iv));
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /libsignal/service/src/main/java/org/whispersystems/signalservice/api/crypto/AttachmentCipherOutputStream.java:105
+103   private Cipher initializeCipher() {
+104     try {
+105       return Cipher.getInstance("AES/CBC/PKCS5Padding");
+106     } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+107       throw new AssertionError(e);
+108     }
+109   }
+----
+
+AES/CBC/PKCS5Padding is weak and should not be used.
+
+[source, java]
+----
+// File: /libsignal/service/src/main/java/org/whispersystems/signalservice/internal/crypto/PrimaryProvisioningCipher.java:61
+ 59   private byte[] getCiphertext(byte[] key, byte[] message) {
+ 60     try {
+ 61       Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+ 62       cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"));
+ 63
+ 64       return Util.join(cipher.getIV(), cipher.doFinal(message));
+----
+
+=== One (1) Warning - Uncontrolled data used in content resolution
+
+This ContentResolver method that resolves a URI depends on a user-provided value.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/mms/PartAuthority.java:80
+ 67   public static InputStream getAttachmentStream(@NonNull Context context, @NonNull Uri uri)
+ 68       throws IOException
+ 69   {
+ 70     int match = uriMatcher.match(uri);
+ 71     try {
+ 72       switch (match) {
+ 73       case PART_ROW:          return SignalDatabase.attachments().getAttachmentStream(new PartUriParser(uri).getPartId(), 0);
+ 74       case STICKER_ROW:       return SignalDatabase.stickers().getStickerStream(ContentUris.parseId(uri));
+ 75       case PERSISTENT_ROW:    return DeprecatedPersistentBlobProvider.getInstance(context).getStream(context, ContentUris.parseId(uri));
+ 76       case BLOB_ROW:          return BlobProvider.getInstance().getStream(context, uri);
+ 77       case WALLPAPER_ROW:     return WallpaperStorage.read(context, getWallpaperFilename(uri));
+ 78       case EMOJI_ROW:         return EmojiFiles.openForReading(context, getEmojiFilename(uri));
+ 79       case AVATAR_PICKER_ROW: return AvatarPickerStorage.read(context, getAvatarPickerFilename(uri));
+ 80       default:                return context.getContentResolver().openInputStream(uri);
+ 81       }
+ 82     } catch (SecurityException se) {
+ 83       throw new IOException(se);
+ 84     }
+ 85   }
+----
+
+
+=== Three (3) Warnings - Polynomial regular expression used on uncontrolled data
+
+This regular expression that depends on a user-provided value may run slow on strings with many repetitions of specific character.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/stickers/StickerUrl.java:54
+ 20 public class StickerUrl {
+ 21
+ 22   private static final Pattern STICKER_URL_PATTERN = Pattern.compile("^https://signal\\.art/addstickers/#pack_id=(.*)&pack_key=(.*)$");
+...
+ 54     Matcher matcher = STICKER_URL_PATTERN.matcher(url);
+----
+
+This regular expression that depends on a user-provided value may run slow on strings with many repetitions of specific character.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/util/SignalProxyUtil.java:126,144
+ 35   private static final Pattern HOST_PATTERN = Pattern.compile("^([^:]+).*$");
+...
+120   public static @NonNull String convertUserEnteredAddressToHost(@NonNull String host) {
+126     Matcher matcher = HOST_PATTERN.matcher(host);
+...
+136   public static @NonNull String generateProxyUrl(@NonNull String link) {
+144     Matcher matcher = HOST_PATTERN.matcher(host);
+----
+
+
+=== Three (3) Errors - Inefficient regular expression
+
+This part of the regular expression may cause exponential backtracking on strings containing many repetitions of '♀‍', '©', or '⃠a'.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/components/emoji/EmojiUtil.java:20
+ 19 public final class EmojiUtil {
+ 20 private static final Pattern EMOJI_PATTERN = Pattern.compile("^(?:(?:
+        [\u00a9\u00ae\u203c\u2049\u2122\u2139\u2194-\u2199\u21a9-\u21aa\u231a-
+        \u231b\u2328\u23cf\u23e9-\u23f3\u23f8-\u23fa\u24c2\u25aa-\u25ab\u25b6\u25c0\u25fb-
+        \u25fe\u2600-\u2604\u260e\u2611\u2614-\u2615\u2618\u261d\u2620\u2622-
+        \u2623\u2626\u262a\u262e-\u262f\u2638-\u263a\u2648-\u2653\u2660\u2663\u2665-
+        \u2666\u2668\u267b\u267f\u2692-\u2694\u2696-\u2697\u2699\u269b-\u269c\u26a0-
+        \u26a1\u26aa-\u26ab\u26b0-\u26b1\u26bd-\u26be\u26c4-\u26c5\u26c8\u26ce-
+        \u26cf\u26d1\u26d3-\u26d4\u26e9-\u26ea\u26f0-\u26f5\u26f7-
+        \u26fa\u26fd\u2702\u2705\u2708-
+        \u270d\u270f\u2712\u2714\u2716\u271d\u2721\u2728\u2733-
+        \u2734\u2744\u2747\u274c\u274e\u2753-\u2755\u2757\u2763-\u2764\u2795-
+        \u2797\u27a1\u27b0\u27bf\u2934-\u2935\u2b05-\u2b07\u2b1b-
+        \u2b1c\u2b50\u2b55\u3030\u303d\u3297\u3299\ud83c\udc04\ud83c\udccf\ud83c\udd70-
+        \ud83c\udd71\ud83c\udd7e-\ud83c\udd7f\ud83c\udd8e\ud83c\udd91-
+        \ud83c\udd9a\ud83c\ude01-\ud83c\ude02\ud83c\ude1a\ud83c\ude2f\ud83c\ude32-
+        \ud83c\ude3a\ud83c\ude50-\ud83c\ude51\u200d\ud83c\udf00-\ud83d\uddff\ud83d\ude00-
+        \ud83d\ude4f\ud83d\ude80-\ud83d\udeff\ud83e\udd00-\ud83e\uddff\udb40\udc20-
+        \udb40\udc7f]|\u200d[\u2640\u2642]|[\ud83c\udde6-\ud83c\uddff]{2}|.
+    [\u20e0\u20e3\ufe0f]+)+)+$");
+----
+
+
+=== Three (3) Warnings - Improper verification of intent by broadcast receiver
+
+This reciever doesn't verify intents it receives.
+Same as CircleCI Linter *Unsafe Protected BroadcastReceiver* warnings.
+
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/jobmanager/BootReceiver.java:14
+  9 public class BootReceiver extends BroadcastReceiver {
+ 10
+ 11   private static final String TAG = Log.tag(BootReceiver.class);
+ 12
+ 13   @Override
+ 14   public void onReceive(Context context, Intent intent) {
+ 15     Log.i(TAG, "Boot received. Application is created, kickstarting JobManager.");
+ 16   }
+ 17 }
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/notifications/LocaleChangedReceiver.java:12
+  9 public class LocaleChangedReceiver extends BroadcastReceiver {
+ 10
+ 11   @Override
+ 12   public void onReceive(Context context, Intent intent) {
+ 13     NotificationChannels.create(context);
+ 14     EmojiSearchIndexDownloadJob.scheduleImmediately();
+ 15   }
+ 16 }
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/service/BootReceiver.java:13
+ 10 public class BootReceiver extends BroadcastReceiver {
+ 11
+ 12   @Override
+ 13   public void onReceive(Context context, Intent intent) {
+ 14     ApplicationDependencies.getJobManager().add(new PushNotificationReceiveJob());
+ 15   }
+ 16 }
+----
+
+
+=== Nineteen (19) Warnings - Implicitly exported Android component
+
+This component is implicitly exported.
+Same as CircleCI Linter *Unspecified android:exported in manifest* warnings.
+
+[source, xml]
+----
+<!-- File: /app/src/main/AndroidManifest.xml:157,214,257,513,675,681,721,812,819,825,831,837,844,850,856,864,899 -->
+157     <activity android:name=".DeviceProvisioningActivity"
+158               android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
+...
+214     <activity android:name=".stickers.StickerPackPreviewActivity"
+215               android:theme="@style/Theme.Signal.DayNight.NoActionBar"
+216               android:launchMode="singleTask"
+217               android:noHistory="true"
+218               android:windowSoftInputMode="stateHidden"
+219               android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize">
+...
+257     <activity android:name=".deeplinks.DeepLinkEntryActivity"
+258               android:noHistory="true"
+259               android:theme="@style/Signal.Transparent">
+...
+513     <activity android:name=".SmsSendtoActivity">
+675     <service android:name=".components.voice.VoiceNotePlaybackService">
+681     <receiver android:name="androidx.media.session.MediaButtonReceiver" >
+721     <service android:name=".gcm.FcmReceiveService">
+812     <receiver android:name=".service.BootReceiver">
+819     <receiver android:name=".service.DirectoryRefreshListener">
+825     <receiver android:name=".service.RotateSignedPreKeyListener">
+831     <receiver android:name=".service.RotateSenderCertificateListener">
+837     <receiver android:name=".messageprocessingalarm.MessageProcessReceiver">
+844     <receiver android:name=".service.LocalBackupListener">
+850     <receiver android:name=".service.PersistentConnectionBootListener">
+856     <receiver android:name=".notifications.LocaleChangedReceiver">
+864     <receiver android:name=".notifications.DeleteNotificationReceiver">
+899     <receiver
+900         android:name=".jobmanager.BootReceiver"
+901         android:enabled="true">
+----
+
+[source, xml]
+----
+<!-- File: /app/src/website/AndroidManifest.xml:7,13 -->
+  7         <receiver android:name=".service.UpdateApkRefreshListener">
+  8             <intent-filter>
+  9                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+ 10             </intent-filter>
+ 11         </receiver>
+ 12
+ 13         <receiver android:name=".service.UpdateApkReadyListener">
+ 14             <intent-filter>
+ 15                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+ 16             </intent-filter>
+ 17         </receiver>
+----
+
+
+=== Four (4) Errors - Use of implicit PendingIntents
+
+An implicit Intent is created and sent to an unspecified third party through a PendingIntents.
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/service/UpdateApkReadyListener.java:77
+ 59   private void displayInstallNotification(Context context, Uri uri) {
+...
+ 77     ServiceUtil.getNotificationManager(context).notify(666, notification);
+ 78   }
+----
+
+[source, java]
+----
+// File: /app/src/main/java/org/thoughtcrime/securesms/util/AlarmSleepTimer.java:76,80,84
+ 63   private class AlarmReceiver extends BroadcastReceiver {
+ 64     private static final String WAKE_UP_THREAD_ACTION = "org.thoughtcrime.securesms.util.AlarmSleepTimer.AlarmReceiver.WAKE_UP_THREAD";
+ 65
+ 66     private void setAlarm(long millis, String action) {
+ 67       final Intent        intent        = new Intent(action);
+ 68       final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+ 69       final AlarmManager  alarmManager  = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+ 70
+ 71       Log.w(TAG, "Setting alarm to wake up in " + millis + "ms.");
+ 72
+ 73       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+ 74         alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+ 75                                                SystemClock.elapsedRealtime() + millis,
+ 76                                                pendingIntent);
+ 77       } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+ 78         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+ 79                               SystemClock.elapsedRealtime() + millis,
+ 80                               pendingIntent);
+ 81       } else {
+ 82         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+ 83                          SystemClock.elapsedRealtime() + millis,
+ 84                          pendingIntent);
+ 85       }
+ 86     }
+...
+ 96   }
+----
+
+
+== Results
+
+This test is failed. CodeQL reports 53 warnings and 9 errors
+
